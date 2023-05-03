@@ -61,12 +61,20 @@ export default class Creature {
       element: Random.range(0, Object.keys(CreatureElement).length / 2 - 1),
       attrPoints: 0,
       usedAttrPoints: 0,
-      baseStatus: CreatureStatus.createBasicStatus(),
+      baseAttributes: CreatureAttributes.createBasicAttributes(),
       attributes: CreatureAttributes.createEmptyAttributes(),
       actions: [],
     });
     creature.calcStatus();
     return creature;
   }
-  //resetAttributes() {}
+  levelUp() {
+    this.level++;
+    this.attrPoints += 1;
+  }
+  resetAttributes() {
+    this.attributes = CreatureAttributes.createEmptyAttributes();
+    this.attrPoints = this.usedAttrPoints;
+    this.usedAttrPoints = 0;
+  }
 }
