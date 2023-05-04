@@ -48,11 +48,16 @@ export default class Creature {
   }
   calcStatus() {
     const newStatus = CreatureStatus.createBasicStatus();
-    newStatus.attackPower += this.attributes.strength * 2;
-    newStatus.defensePower += this.attributes.defense * 2;
-    newStatus.stamina += this.attributes.intelligence * 2;
-    newStatus.life += this.attributes.vitality * 2;
-    newStatus.speed += this.attributes.agility * 2;
+    newStatus.attackPower +=
+      (this.attributes.strength + this.baseAttributes.strength) * 2;
+    newStatus.defensePower +=
+      (this.attributes.defense + this.baseAttributes.defense) * 2;
+    newStatus.stamina +=
+      (this.attributes.intelligence + this.baseAttributes.intelligence) * 2;
+    newStatus.life +=
+      (this.attributes.vitality + this.baseAttributes.vitality) * 2;
+    newStatus.speed +=
+      (this.attributes.agility + this.baseAttributes.agility) * 2;
     this.status = newStatus;
   }
   static CreateBasicCreature() {

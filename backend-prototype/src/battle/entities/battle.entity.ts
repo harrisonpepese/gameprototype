@@ -1,7 +1,7 @@
 import Creature from 'src/creature/entities/creature.entity';
-import CreatureStatus from 'src/creature/valueObjects/createStatus.valueObject';
 import User from 'src/user/entities/user.entity';
 import Random from 'src/utils/random';
+import BattleCreatureStatus from './battleCreatureStatus';
 
 export class Battle {
   started: boolean;
@@ -19,75 +19,96 @@ export class Battle {
   }
   executeRound() {
     const round = this.rounds[length - 1];
-    round.actions.forEach((x) => (x.randomSeed = Random.range(5, 15)));
     this.executeActions(
       round.actions.map((x) => {
-        const player = this.players.find((x) => x.userId == x.userId);
+        const player = this.players.find((y) => y.user.id == x.userId);
         return {
           action: x,
           player,
-          actionPower: this.calcActionPower(x, player.creature.status),
+          actionPower: this.calcActionPower(x, player.battleStatus),
         };
       }),
     );
   }
   executeActions(dtos: BattleExecDto[]) {
     for (const dto of dtos) {
+      const origin = dto;
+      const target = dtos.find((x) => x.player.user.id == dto.action.targetId)
       this.affectCreature(
-        dto,
-        dtos.find((x) => x.player.userId == dto.action.targetId),
+        origin,
+        target,
       );
+      if(target.player.battleStatus.currentLife)
+    }
+  }
+
+  baseAttack(origin: BattleExecDto, target: BattleExecDto) {
+    if (target.action.actionType == BattleRoundActionType.defensePosition) {
+      target.player.battleStatus.damage(origin.actionPower, target.actionPower);
+      return;
+    }
+    if (target.action.actionType == BattleRoundActionType.dodgePosition) {
+      const targetDodge = this.targetHasDodge(
+        origin.player.battleStatus,
+        target.player.battleStatus,
+      );
+      if (targetDodge) {
+        target.player.battleStatus.weary(origin.actionPower * 0.5);
+      } else {
+        target.player.battleStatus.damage(origin.actionPower);
+        target.player.battleStatus.weary(origin.actionPower * 0.3);
+      }
+      return;
+    }
+    target.player.battleStatus.damage(origin.actionPower);
+  }
+
+  targetHasDodge(
+    origin: BattleCreatureStatus,
+    target: BattleCreatureStatus,
+  ): boolean {
+    const seed = Random.random();
+    if (origin.currentSpeed === target.currentSpeed) {
+      return seed < 0.5 ? true : false;
+    }
+    const max = Math.max(origin.currentSpeed, target.currentSpeed);
+    const originChance = origin.currentSpeed / max;
+    const targetChance = target.currentSpeed / max;
+    if (originChance > targetChance) {
+      if (seed > targetChance) {
+        return false;
+      }
+      return true;
+    } else {
+      if (seed < originChance) {
+        return false;
+      }
+      return true;
     }
   }
 
   affectCreature(origin: BattleExecDto, target: BattleExecDto) {
     if (origin.action.actionType == BattleRoundActionType.baseAttack) {
-      if (target.action.actionType == BattleRoundActionType.defensePosition) {
-        const damage = origin.actionPower - target.actionPower;
-        if (damage <= 0) {
-          target.player.creature.status.life -= 1;
-        }
-        target.player.creature.status.life -= damage;
-      }
-      if (target.action.actionType == BattleRoundActionType.dodgePosition) {
-        const damage = origin.actionPower - target.actionPower;
-        if (damage <= 0) {
-          target.player.creature.status.life -= 1;
-        }
-        target.player.creature.status.life -= damage;
-      }
-    }
-    if (origin.action.actionType == BattleRoundActionType.creatureSkill) {
-      if (target.action.actionType == BattleRoundActionType.defensePosition) {
-        const damage = origin.actionPower - target.actionPower;
-        if (damage <= 0) {
-          target.player.creature.status.life -= 1;
-        }
-        target.player.creature.status.life -= damage;
-      }
-      if (target.action.actionType == BattleRoundActionType.dodgePosition) {
-        const damage = origin.actionPower - target.actionPower;
-        if (damage <= 0) {
-          target.player.creature.status.life -= 1;
-        }
-        target.player.creature.status.life -= damage;
-      }
+      this.baseAttack(origin, target);
     }
     if (origin.action.actionType == BattleRoundActionType.meditation) {
+      origin.player.battleStatus.heal(0.35);
+      origin.player.battleStatus.rest(0.5);
     }
   }
 
-  calcActionPower(action: BattleRoundAction, creatureStatus: CreatureStatus) {
+  calcActionPower(
+    action: BattleRoundAction,
+    creatureStatus: BattleCreatureStatus,
+  ) {
     switch (action.actionType) {
       case BattleRoundActionType.baseAttack:
-        return creatureStatus.attackPower * action.randomSeed;
+        return creatureStatus.currentAttackPower;
       case BattleRoundActionType.defensePosition:
-        return creatureStatus.defensePower * action.randomSeed;
+        return creatureStatus.currentDefensePower * 0.5;
       case BattleRoundActionType.dodgePosition:
-        return creatureStatus.speed * action.randomSeed;
+        return creatureStatus.currentSpeed;
       case BattleRoundActionType.meditation:
-        return creatureStatus.stamina * action.randomSeed;
-      case BattleRoundActionType.none:
         return 0;
       case BattleRoundActionType.creatureSkill:
         return 0;
@@ -106,17 +127,15 @@ export interface BattleExecDto {
 export interface BattleRoundAction {
   userId: string;
   targetId: string;
-  randomSeed: number;
   actionType: BattleRoundActionType;
   creatureSkillId?: string;
 }
 export interface BattleUser {
   user: User;
-  userId: string;
   creature: Creature;
+  battleStatus: BattleCreatureStatus;
 }
 export enum BattleRoundActionType {
-  none,
   baseAttack,
   defensePosition,
   dodgePosition,

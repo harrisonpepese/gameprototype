@@ -24,8 +24,9 @@ export class CreatureController {
     return this.creatureService.addNewCreature(userId);
   }
 
-  @Get(':userId')
-  findAll(@Param('userId') userId: string) {
+  @Get()
+  findAll(@Request() req) {
+    const { userId } = req.user;
     return this.creatureService.findAllByUser(userId);
   }
 
