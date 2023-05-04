@@ -4,9 +4,15 @@ import Random from 'src/utils/random';
 import BattleCreatureStatus from './battleCreatureStatus';
 
 export class Battle {
+  uuid: string;
   started: boolean;
   players: BattleUser[];
   rounds: BattleRound[];
+
+  getActiveRound() {
+    return this.rounds[this.rounds.length - 1];
+  }
+
   startBattle() {
     this.players.forEach((x) => x.creature.calcStatus());
     this.startRound();
@@ -18,7 +24,7 @@ export class Battle {
     this.rounds[this.rounds.length - 1].active = false;
   }
   executeRound() {
-    const round = this.rounds[length - 1];
+    const round = this.getActiveRound();
     this.executeActions(
       round.actions.map((x) => {
         const player = this.players.find((y) => y.user.id == x.userId);
@@ -31,14 +37,17 @@ export class Battle {
     );
   }
   executeActions(dtos: BattleExecDto[]) {
+    dtos.sort(
+      (a, b) =>
+        a.player.battleStatus.currentSpeed - b.player.battleStatus.currentSpeed,
+    );
     for (const dto of dtos) {
       const origin = dto;
-      const target = dtos.find((x) => x.player.user.id == dto.action.targetId)
-      this.affectCreature(
-        origin,
-        target,
-      );
-      if(target.player.battleStatus.currentLife)
+      const target = dtos.find((x) => x.player.user.id == dto.action.targetId);
+      this.affectCreature(origin, target);
+      if (target.player.battleStatus.currentLife == 0) {
+        return;
+      }
     }
   }
 
