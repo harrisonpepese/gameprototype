@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import Creature from './entities/creature.entity';
 import { UtilsService } from 'src/utils/utils.service';
 import CreatureStatus from './valueObjects/createStatus.valueObject';
+import CreatureAttributes from './valueObjects/creatureAttributes.valueObject';
 
 @Injectable()
 export default class CreatureBreedService {
@@ -9,16 +10,16 @@ export default class CreatureBreedService {
   constructor(@Inject() private utils: UtilsService) {}
   breed(creatureOne: Creature, creatureTwo: Creature): Creature {
     const newCreature = new Creature();
-    const baseStatus = new CreatureStatus();
+    const baseStatus = new CreatureAttributes();
     for (const status in baseStatus) {
       baseStatus[status] = this.generateRandom(
         this.calcAverage(
-          creatureOne.baseStatus[status],
-          creatureTwo.baseStatus[status],
+          creatureOne.baseAttributes[status],
+          creatureTwo.baseAttributes[status],
         ),
       );
     }
-    newCreature.baseStatus = baseStatus;
+    newCreature.baseAttributes = baseStatus;
     return newCreature;
   }
   calcAverage(valueOne: number, valueTwo: number): number {

@@ -3,6 +3,6 @@ import { BattleService } from './battle.service';
 import { BattleGateway } from './battle.gateway';
 
 @Module({
-  providers: [BattleGateway, BattleService]
+  providers: [BattleGateway, BattleService],
 })
 export class BattleModule {}

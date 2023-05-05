@@ -17,7 +17,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     UserModule,
     SingupModule,
     CreatureModule,
-    //BattleModule,
+    BattleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

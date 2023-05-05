@@ -9,6 +9,9 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema()
 export default class User {
+  constructor(init?: Partial<User>) {
+    Object.assign(this, init);
+  }
   @Prop()
   id: string;
   @Prop()
