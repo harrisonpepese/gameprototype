@@ -46,3 +46,4 @@ export default class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.loadClass(User);

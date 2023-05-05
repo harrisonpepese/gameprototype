@@ -7,18 +7,25 @@ import {
 } from '@nestjs/websockets';
 import { BattleService } from './battle.service';
 import { Server, Socket } from 'socket.io';
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt.guard';
+import { UseGuards, Request } from '@nestjs/common';
+import { WebSocketJwtAuthGuard } from 'src/auth/webSocketJwt.guard';
+import { randomUUID } from 'crypto';
 
 @WebSocketGateway({ namespace: 'battle', cors: '*:*' })
 export class BattleGateway {
   @WebSocketServer() server: Server;
   constructor(private readonly battleService: BattleService) {}
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(WebSocketJwtAuthGuard)
   @SubscribeMessage('findMatch')
-  findMatch(@MessageBody() data: string, @ConnectedSocket() client: Socket) {
-    console.log(data);
-    return this.battleService.battleMatch();
+  async findMatch(
+    @Request() req,
+    @MessageBody() data: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log(req.handshake.user);
+    const uuid = randomUUID();
+    console.log(uuid);
+    this.server.to(client.id).emit(uuid);
   }
 }
