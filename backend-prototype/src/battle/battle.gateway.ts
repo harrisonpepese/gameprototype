@@ -23,9 +23,8 @@ export class BattleGateway {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log(req.handshake.user);
-    const uuid = randomUUID();
-    console.log(uuid);
-    this.server.to(client.id).emit(uuid);
+    const { userId } = req.handshake.user;
+    await this.battleService.addPlayerToQueue(userId, client);
+    client.emit('wattingBattle');
   }
 }
