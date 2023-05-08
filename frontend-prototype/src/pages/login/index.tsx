@@ -1,9 +1,11 @@
 import { useAuthContext } from "@/contexts/auth";
 import { Button, Container, Stack, TextField, Typography } from "@mui/material";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 export default function LoginPage() {
   const authContext = useAuthContext();
+  const router = useRouter();
   const [username, setUsername] = useState<string>();
   const [password, setPassword] = useState<string>();
   const login = (e: any) => {
@@ -11,6 +13,7 @@ export default function LoginPage() {
     console.log("login");
     if (username && password) authContext.login(username, password);
   };
+  const gotoSingup = () => router.push("/singup");
   return (
     <Container>
       <form onSubmit={login}>
@@ -28,6 +31,7 @@ export default function LoginPage() {
           <Button type="submit">login</Button>
         </Stack>
       </form>
+      <Button onClick={() => gotoSingup()}>Singup</Button>
     </Container>
   );
 }
