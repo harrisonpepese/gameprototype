@@ -7,11 +7,9 @@ import { CssBaseline } from "@mui/material";
 export default function App({ Component, pageProps, router }: AppProps) {
   return (
     <AuthProvider>
-      <RouteGuard router={router}>
-        <CssBaseline />
-        <AppHeader></AppHeader>
-        <Component {...pageProps} />
-      </RouteGuard>
+      <CssBaseline />
+      <AppHeader></AppHeader>
+      <Component {...pageProps} />
     </AuthProvider>
   );
 }
