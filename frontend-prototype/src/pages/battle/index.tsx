@@ -1,7 +1,6 @@
-import { Button, Container, Typography } from "@mui/material";
+import { Button, Container, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-
 const socket = io("localhost:3000/battle", {
   extraHeaders: {
     authorization:
